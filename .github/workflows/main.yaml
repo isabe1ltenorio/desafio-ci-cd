@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - '*'
+      - '*' 
   pull_request:
     branches:
       - main
@@ -17,10 +17,10 @@ env:
   SERVICE_NAME: saudacoes-aleatorias
 
 jobs:
+  # ---------------- LINT ----------------
   lint:
     name: Lint Code
     runs-on: ubuntu-latest
-    # REMOVIDO: if: github.ref_name != 'main'  <-- agora roda em main também
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,7 +28,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: '1.22'  # versão estável e moderna
 
       - name: Go Fmt & Vet
         run: |
@@ -36,17 +36,17 @@ jobs:
           go fmt $(go list ./...)
           go vet $(go list ./...)
 
-      - name: Run golangci-lint
+      - name: Run golangci-lint (v1.59.1)
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.58
-          args: --verbose
+          version: v1.59.1
+          args: --timeout=5m --verbose
 
+  # ---------------- TEST ----------------
   test:
     name: Run Go Tests
     runs-on: ubuntu-latest
     needs: lint
-    # REMOVIDO: if: github.ref_name != 'main'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -71,11 +71,12 @@ jobs:
           name: test-reports
           path: report.xml
 
+  # ---------------- BUILD & PUSH ----------------
   build-and-push:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref_name == 'main'
     needs: test
+    if: github.event_name == 'push' && github.ref_name == 'main'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -104,6 +105,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  # ---------------- DEPLOY ----------------
   deploy:
     name: Deploy to Staging
     runs-on: ubuntu-latest
@@ -135,11 +137,12 @@ jobs:
           TF_VAR_docker_image_name: ${{ env.DOCKER_IMAGE_NAME }}
           TF_VAR_docker_image_tag: ${{ env.DOCKER_IMAGE_TAG }}
 
+  # ---------------- CLEANUP ----------------
   cleanup:
-    name: Destroy Staging (manual)
+    name: Destroy Staging (Manual)
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch'
-    environment: staging 
+    environment: staging  
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
