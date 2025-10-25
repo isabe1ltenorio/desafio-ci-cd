@@ -18,13 +18,13 @@ variable "container_port" {
   default = 8080
 }
 
+# Essas 2 variáveis VÊM do GitHub Actions (sem default!)
 variable "docker_image_name" {
-  type    = string
-  default = "xxxxxx/ms-saudacoes-aleatorias"
+  description = "Nome da imagem Docker (vem do GitHub Actions)"
+  type        = string
 }
 
 variable "docker_image_tag" {
-  type    = string
-  default = "latest"
+  description = "Tag da imagem Docker (vem do GitHub Actions)"
+  type        = string
 }
-  
