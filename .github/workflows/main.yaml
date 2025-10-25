@@ -4,24 +4,22 @@ on:
   push:
     branches:
       - main
-      - '*' # Executa em todas as branches
+      - '*' 
   pull_request:
     branches:
       - main
-  workflow_dispatch: # Permite o acionamento manual
+  workflow_dispatch: 
 
 env:
-  DOCKER_USER: taotreinatec
-  DOCKER_IMAGE_NAME: ${{ vars.DOCKER_USER || 'taotreinatec' }}/ms-saudacoes-aleatorias
-  DOCKER_IMAGE_TAG: 1.0.${{ github.run_id }}
+  DOCKER_USER: ${{ secrets.DOCKER_USER }}
+  DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_USER }}/ms-saudacoes-aleatorias
+  DOCKER_IMAGE_TAG: 1.0.${{ github.run_number }}
   SERVICE_NAME: saudacoes-aleatorias
 
 jobs:
-  # Job para rodar linters em paralelo
   lint:
     name: Lint Code
     runs-on: ubuntu-latest
-    # Executa este job apenas em branches que não são a 'main'
     if: github.ref_name != 'main'
     steps:
       - name: Checkout code
@@ -41,14 +39,13 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.58 # Use uma versão específica para builds consistentes
+          version: v1.58 
           args: --verbose
 
-  # Job para rodar os testes
   test:
     name: Run Go Tests
     runs-on: ubuntu-latest
-    needs: lint # Executa após o job de lint
+    needs: lint 
     if: github.ref_name != 'main'
     steps:
       - name: Checkout code
@@ -71,16 +68,14 @@ jobs:
       
       - name: Upload test results
         uses: actions/upload-artifact@v4
-        if: always() # Sempre executa este passo, mesmo que o anterior falhe
+        if: always() 
         with:
           name: test-reports
           path: report.xml
 
-  # Job para build e push da imagem Docker
   build-and-push:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
-    # Executa apenas quando há um push na branch 'main'
     if: github.event_name == 'push' && github.ref_name == 'main'
     steps:
       - name: Checkout code
@@ -88,17 +83,15 @@ jobs:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-        # Essencial para builds multi-plataforma (ex: ARM em runners x86)
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        # Cria um builder do Docker que suporta builds multi-plataforma
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ env.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_PASS }} # Segredo configurado no GitHub
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASS }} 
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -112,13 +105,12 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Job para fazer o deploy da aplicação
   deploy:
     name: Deploy to Staging
     runs-on: ubuntu-latest
-    needs: build-and-push # Depende do sucesso do build
+    needs: build-and-push 
     if: github.event_name == 'push' && github.ref_name == 'main'
-    environment: staging # Define um ambiente (opcional, bom para proteção)
+    environment: staging 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -144,12 +136,9 @@ jobs:
           TF_VAR_docker_image_name: ${{ env.DOCKER_IMAGE_NAME }}
           TF_VAR_docker_image_tag: ${{ env.DOCKER_IMAGE_TAG }}
 
-  # Job para destruir a infraestrutura manualmente
   destroy:
     name: Destroy Staging
     runs-on: ubuntu-latest
-    needs: deploy
-    # Executa apenas quando acionado manualmente (workflow_dispatch)
     if: github.event_name == 'workflow_dispatch'
     environment: staging
     steps:
