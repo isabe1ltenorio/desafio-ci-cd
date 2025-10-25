@@ -8,6 +8,7 @@ terraform {
 }
 
 provider "koyeb" {
+  # O token será fornecido via variável de ambiente KOYEB_TOKEN
 }
 
 # Variáveis
@@ -64,7 +65,7 @@ resource "koyeb_service" "saudacoes_service" {
       max = 1
     }
     
-    # Variáveis de ambiente (se necessário)
+    # Variáveis de ambiente
     env {
       key   = "PORT"
       value = "8080"
