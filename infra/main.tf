@@ -11,20 +11,9 @@ provider "koyeb" {
   # O token será fornecido via variável de ambiente KOYEB_TOKEN
 }
 
-# Variáveis
-variable "docker_image_name" {
-  description = "Nome da imagem Docker"
-  type        = string
-}
-
-variable "docker_image_tag" {
-  description = "Tag da imagem Docker"
-  type        = string
-}
-
 # Criar o App no Koyeb
 resource "koyeb_app" "saudacoes_app" {
-  name = "saudacoes-aleatorias"
+  name = var.app_name
 }
 
 # Criar o Service no Koyeb
@@ -32,7 +21,7 @@ resource "koyeb_service" "saudacoes_service" {
   app_name = koyeb_app.saudacoes_app.name
   
   definition {
-    name = "saudacoes-service"
+    name = var.service_name
     
     # Configuração da imagem Docker
     docker {
@@ -41,19 +30,19 @@ resource "koyeb_service" "saudacoes_service" {
     
     # Tipo de instância (free tier)
     instance_types {
-      type = "free"
+      type = var.instance_type
     }
     
     # Porta da aplicação
     ports {
-      port     = 8080
+      port     = var.container_port
       protocol = "http"
     }
     
     # Rota principal
     routes {
       path = "/"
-      port = 8080
+      port = var.container_port
     }
     
     # Região de deploy
@@ -68,14 +57,14 @@ resource "koyeb_service" "saudacoes_service" {
     # Variáveis de ambiente
     env {
       key   = "PORT"
-      value = "8080"
+      value = tostring(var.container_port)
     }
     
     # Health checks
     health_checks {
       http {
         path = "/api/saudacoes/aleatorio"
-        port = 8080
+        port = var.container_port
       }
     }
   }
