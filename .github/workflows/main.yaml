@@ -28,7 +28,8 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'  # versão estável e moderna
+          go-version: '1.22.3' 
+          cache: false # Desativar o cache do Go pode ajudar a garantir a versão correta
 
       - name: Go Fmt & Vet
         run: |
