@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - '*' 
+      - '*'  
   pull_request:
     branches:
       - main
@@ -28,8 +28,8 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
+          # Altera a versão para '1.22.3' para ser compatível com o linter
           go-version: '1.22.3' 
-          cache: false # Desativar o cache do Go pode ajudar a garantir a versão correta
 
       - name: Go Fmt & Vet
         run: |
@@ -55,7 +55,8 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          # Altera a versão para '1.22.3' para manter a consistência
+          go-version: '1.22.3'
 
       - name: Install gotestsum
         run: go install gotest.tools/gotestsum@latest
