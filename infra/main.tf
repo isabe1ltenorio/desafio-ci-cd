@@ -53,7 +53,7 @@ resource "koyeb_service" "my-service" {
     }
   }
   
-  depends_on = [
-    koyeb_app["my-app"]
-  ]
+ depends_on = [
+  koyeb_app.my-app  
+]
 }
